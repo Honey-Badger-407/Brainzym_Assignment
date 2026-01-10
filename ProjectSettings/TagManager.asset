@@ -3,7 +3,16 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - TL
+  - TM
+  - TR
+  - ML
+  - MM
+  - MR
+  - BL
+  - BM
+  - BR
   layers:
   - Default
   - TransparentFX
