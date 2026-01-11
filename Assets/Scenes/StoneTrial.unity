@@ -597,6 +597,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StopMenu
   pauseMenuUI: {fileID: 1621051982}
   OnScreenMenu: {fileID: 1737251833}
+  PauseMenuscoreText: {fileID: 57994947}
+  PauseMenuwrongClicksText: {fileID: 206291897}
+  PauseMenuAccuracyText: {fileID: 1536353734}
+  gameLogic: {fileID: 233904107}
 --- !u!1 &340150182
 GameObject:
   m_ObjectHideFlags: 0

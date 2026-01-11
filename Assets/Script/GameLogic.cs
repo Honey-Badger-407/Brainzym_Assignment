@@ -4,6 +4,7 @@ using Cainos.PixelArtTopDown_Basic;
 using UnityEngine;
 using TMPro;
 using Unity.Mathematics;
+using System;
 
 
 public class GameLogic : MonoBehaviour
@@ -26,6 +27,7 @@ public class GameLogic : MonoBehaviour
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text wrongClicksText;
     [SerializeField] private TMP_Text AccuracyText;
+
     private OddRule currentRule;
     enum OddRule
     {
@@ -228,4 +230,19 @@ public class GameLogic : MonoBehaviour
         PillarsObjects[pillarAdd].transform.rotation=Quaternion.Euler(0f,0f,0f);
         PillarsObjects[pillarAdd].transform.position= obj;
     }
+        public int GetScore()
+    {
+        return Score;
+    }
+
+    public int GetWrongClicks()
+    {
+        return WrongClicks;
+    }
+
+    public float GetAccuracy()
+    {
+        return Accuracy;
+    }
+
 }

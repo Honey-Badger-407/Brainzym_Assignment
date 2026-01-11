@@ -1,12 +1,16 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class StopMenu : MonoBehaviour
 {
     public GameObject pauseMenuUI;
     public GameObject OnScreenMenu;
     bool isPaused;
-
+    [SerializeField] private TMP_Text PauseMenuscoreText;
+    [SerializeField] private TMP_Text PauseMenuwrongClicksText;
+    [SerializeField] private TMP_Text PauseMenuAccuracyText;
+    public GameLogic gameLogic;
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -29,6 +33,7 @@ public class StopMenu : MonoBehaviour
     }
     public void PauseGame()
     {
+        UpdateStats();
         OnScreenMenu.SetActive(false);
         pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
@@ -37,8 +42,15 @@ public class StopMenu : MonoBehaviour
     public void ResumeGame()
     {
         pauseMenuUI.SetActive(false);
-        OnScreenMenu.SetActive(false);
+        OnScreenMenu.SetActive(true);
         Time.timeScale = 1f;
         isPaused = false;
     }
+    void UpdateStats()
+    {
+        PauseMenuscoreText.text = "Score: " + gameLogic.GetScore();
+        PauseMenuwrongClicksText.text = "Wrong Clicks: " + gameLogic.GetWrongClicks();
+        PauseMenuAccuracyText.text = $"Accuracy: {gameLogic.GetAccuracy():F1}%";
+    }
+
 }
