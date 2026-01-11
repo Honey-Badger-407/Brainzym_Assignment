@@ -11,9 +11,8 @@ public class GameLogic : MonoBehaviour
     public List<GameObject> Glow;
     private int Score = 0;
     public string Selected_Pillar;
-    public float speed;
     private int pillarAdd;
-    public float selectionWindow = 0f;
+    public float selectionWindow = 2f;
     private bool canSelect = false;
     private Coroutine ActionWindow;
     private SpriteRenderer SR;
@@ -24,12 +23,17 @@ public class GameLogic : MonoBehaviour
     private int WrongClicks=0,ClickCount=0;
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text wrongClicksText;
-
+    [SerializeField] private TMP_Text AccuracyText;
+    private OddRule currentRule;
+    enum OddRule
+    {
+        GlowOnly,RotationOnly
+    }
     void Start()
     {
+        reactionTimeQueue = new Queue<float>();
         SetColor();
         SelectPillar();
-        ControlingCoroutine(selectionWindow);
     }
     public void ControlingCoroutine(float duration)
     {
@@ -58,22 +62,30 @@ public class GameLogic : MonoBehaviour
             canSelect=false;
             Score--;
             WrongClicks++;
+            AddReactionTime(selectionWindow);
+            AdjustDifficulty();
             SetColor();
             SelectPillar();
         }
 
     }
     void SelectPillar()
-    {
-        pillarAdd = Random.Range(0, Pillars.Count);
-        Selected_Pillar = Pillars[pillarAdd];
-        Debug.Log(Selected_Pillar);
-        SR = Glow[pillarAdd].GetComponent<SpriteRenderer>();
-        ControlingCoroutine(selectionWindow);
-    }
+{
+    pillarAdd = Random.Range(0, Pillars.Count);
+    Selected_Pillar = Pillars[pillarAdd];
+    currentRule = (OddRule)Random.Range(0, 2);
+    
+
+    ApplyRule();                     
+
+    UpdateUI();
+    ControlingCoroutine(selectionWindow);
+}
+
 
     public void PlayerSeletion(string Player_Selected)
     {
+        Debug.Log("Player "+Player_Selected);
         if (!canSelect) 
         {
             return;
@@ -81,33 +93,33 @@ public class GameLogic : MonoBehaviour
         canSelect = false;
         lastReactionTime = Time.time - roundStartTime;
         AddReactionTime(lastReactionTime);
-        
+        Debug.Log(Player_Selected);
         CheckSelection(Player_Selected);
     }
 
 
-    void CheckSelection( string Player_Selected)
+    void CheckSelection(string Player_Selected)
     {
-        if(Player_Selected == Selected_Pillar)
+        ClickCount++;
+
+        if (Player_Selected == Selected_Pillar)
         {
-            Score++;
+            float normalized = Mathf.Clamp01(lastReactionTime / selectionWindow);
+            int roundScore = Mathf.RoundToInt(Mathf.Lerp(100, 20, normalized));
+            Score += roundScore;
         }
         else
         {
-            Score--;
+            Score -= 30;
             WrongClicks++;
         }
-        ClickCount++;
-        Accuracy=(ClickCount-WrongClicks)/ClickCount;
-        Debug.Log("Player Selected" + Player_Selected);
-        Debug.Log("Player Score" +Score);
-        float avgReaction = GetAverageReactionTime();
-        float targetWindow = Mathf.Lerp(1.8f,0.6f,avgReaction/selectionWindow);
-        selectionWindow = Mathf.Clamp(selectionWindow, 0.5f, 2.5f);
-        selectionWindow = Mathf.Lerp(selectionWindow , targetWindow,0.3f);
-        SetColor();
+
+        Accuracy = ((float)(ClickCount - WrongClicks) / ClickCount) * 100f;
+
+        AdjustDifficulty();
         SelectPillar();
     }
+
     void SetColor()
     {
         SpriteRenderer sr;
@@ -140,6 +152,48 @@ public class GameLogic : MonoBehaviour
 
         return sum / reactionTimeQueue.Count;
     }
+    void UpdateUI()
+    {
+        scoreText.text = "Score: " + Score;
+        wrongClicksText.text = "Wrong: " + WrongClicks;
+        AccuracyText.text = $"Accuracy: {Accuracy:F1}%";
+    }
+
+    void ApplyRule()
+    {
+        SetColor(); // reset visuals first
+
+        switch (currentRule)
+        {
+            case OddRule.GlowOnly:
+                ApplyGlowRule();
+                break;
+
+            case OddRule.RotationOnly:
+                ApplyRotationRule();
+                break;
+        }
+    }
+    void AdjustDifficulty()
+    {
+        float avgReaction = GetAverageReactionTime();
+
+        float normalized = Mathf.Clamp01(avgReaction / 2f);
+
+        float targetWindow = Mathf.Lerp(2f, 0.6f, normalized);
+
+        selectionWindow = Mathf.Lerp(selectionWindow, targetWindow, 0.1f);
+    }
 
 
+    void ApplyGlowRule()
+    {
+        SR = Glow[pillarAdd].GetComponent<SpriteRenderer>();
+    }
+    void ApplyRotationRule()
+    {
+        Glow[pillarAdd].transform.rotation = Quaternion.identity;
+        Glow[pillarAdd].transform.rotation = Quaternion.Euler(0f, 0f, 45f);
+        SR = Glow[pillarAdd].GetComponent<SpriteRenderer>();
+    }
 }
